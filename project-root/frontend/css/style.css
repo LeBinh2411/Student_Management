@@ -1,0 +1,65 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+header {
+  background-color: #2c3e50;
+  padding: 1rem;
+}
+.logo-img {
+  height: 40px;
+  width: auto;
+}
+.main-content {
+  display: flex;
+  flex: 1;
+}
+.sidebar {
+  width: 250px;
+  background-color: #34495e;
+  color: white;
+  padding: 1rem 0;
+  height: calc(100vh - 60px); /* Trừ chiều cao header */
+}
+.sidebar ul {
+  list-style: none;
+}
+.sidebar li {
+  padding: 0.5rem 1rem;
+}
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  display: block;
+}
+.sidebar a:hover {
+  background-color: #465c71;
+  border-radius: 5px;
+}
+.content {
+  flex: 1;
+  padding: 2rem;
+  background-color: white;
+}
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+  }
+  .main-content {
+    flex-direction: column;
+  }
+  .content {
+    padding: 1rem;
+  }
+}
