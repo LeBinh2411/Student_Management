@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Role } from 'src/entity/role/role.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Role])], // đăng ký repository để làm vc với bảng Role
+  imports: [TypeOrmModule.forFeature([Role])], // đăng ký repository để được làm vc với bảng Role
   controllers: [RoleController],
   providers: [RoleService],
 })

@@ -1,1 +1,9 @@
 .env
+
+ctrl + k + l
+
+nếu cùng dùng get tìm kiếm theo tên và id và có url cùng cấp thì nó sẽ ưu tiên run cái đầu tiên và cái thứ 2 sẽ bị lỗi.
+cách khắc phục sửa url của get thứ 2 để cho không cùng cấp
+VD như:
+url 1: '/:id'
+url 2: '/name/:name'
