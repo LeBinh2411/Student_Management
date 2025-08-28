@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/entity/role/role.entity';
 import { Repository } from 'typeorm';
+import { CreateRoleDto } from './dto/create-role.dto';
 
 @Injectable() // là 1 decorator , nó đánh dấu class là 1 provider(nhà cung cấp dịch vụ - nhà phát triển)
 // mục đích: cho phép class này được inject(tiêm) vào các thành phần khác như controllers, service, hoặc các providers khác
@@ -63,5 +68,62 @@ export class RoleService {
       console.log('🚀 ~ RoleService ~ findOneName ~ error:', error);
       throw new NotFoundException('Role not found');
     }
+  }
+
+  async saveRole(createRoleDto: CreateRoleDto): Promise<Role> {
+    //check tên trùng
+    //this.roleRepository là đại diện cho 1 đối tượng của Repository<Role> nó cung cấp các phương thức để tương tác với bảng role
+    //fileOne là 1 phương thức của Repository dùng để tìm và trả về 1 bản ghi đầu tiên thỏa mãn điều kiện cung cấp
+    const existingRole = await this.roleRepository.findOne({
+      //{where: ...} là 1 đối tượng đc dùng làm tham số cho phương thức findOne của TypeoORM
+      // where là 1 thuộc tính chỉ định điều kiện để lọc bản ghi trong bảng role
+      // {name: createRoleDto.name} là 1 object lồng bên trong where, trong đó name là tên cột trong bảng Role
+      // và createRoleDto.name là giá trị mà mk muốn so sánh với cột đó - createRoleDto.name là dữ liệu đầu vào body của 1 yêu cầu HTTP
+
+      where: { name: createRoleDto.name },
+    });
+
+    if (existingRole) {
+      //ném ngoại lệ BadRequestException là 1 lớp của NestJS dùng để báo lỗi HTTP 400 cho client
+      throw new BadRequestException(
+        `Role với tên "${createRoleDto.name}" đã tồn tại`,
+      );
+    }
+    //Phương thức create của Repository là tạo 1 đối tượng mới của entity Role dựa trên dữ liệu từ createRoleDto, nó không lưu dữ liệu vào db mà chỉ khởi tạo 1 đối tượng mới trong bộ nhớ
+    const role = this.roleRepository.create(createRoleDto);
+    //Phương thức save của Repository là thực hiện lưu đối tượng vào db, và nó là phương thức bất đồng bộ
+    return await this.roleRepository.save(role);
+  }
+
+  //Promise<void> hàm không trả về gì cả ngoại trừ exception nếu lỗi
+  async deleteRole(id: number): Promise<void> {
+    const role = await this.roleRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!role) {
+      throw new NotFoundException(`Role với id ${id} không tồn tại`);
+    }
+
+    await this.roleRepository.remove(role);
+  }
+  //update
+  async updateRole(id: number, updateRoleDto: CreateRoleDto): Promise<Role> {
+    //Tìm role theo id
+    const role = await this.roleRepository.findOne({
+      where: { id: id },
+    });
+    // check không có lỗi
+    if (!role) {
+      throw new NotFoundException(`Role id=${id} không tồn tại`);
+    }
+    //Cập nhật dữ liệu bằng spread
+    //... copy lại dữ liệu cũ từ db
+    //... ghi đè fiels mới mà người dùng gửi lên
+    // thứ tự quan trọng: bên phải ghi đè bên trái
+    const updateRole = { ...role, ...updateRoleDto };
+
+    //lưu lại db
+    return await this.roleRepository.save(updateRole);
   }
 }
