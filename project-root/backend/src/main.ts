@@ -3,9 +3,19 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  //bật validation toàn cục
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // chỉ nhận field trong dto
+      forbidNonWhitelisted: true, // nếu gửi field thừa thì báo lỗi
+      transform: true, //tự động chuyển kiểu dữ liệu (string ->numberr)
+    }),
+  );
 
   // Cấu hình static assets (nếu dùng uploads)
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {

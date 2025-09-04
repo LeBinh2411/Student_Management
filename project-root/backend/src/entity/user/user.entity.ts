@@ -13,7 +13,7 @@ export class User {
   id: number;
 
   @Column({ name: 'user_name', type: 'varchar', unique: true }) //không trùng
-  username: string;
+  userName: string;
 
   @Column({ name: 'password', type: 'varchar' })
   password: string;

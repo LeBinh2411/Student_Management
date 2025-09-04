@@ -23,7 +23,7 @@ import { UserModule } from './modules/user/user.module';
         database: config.get<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         //migrations: [__dirname + '/migrations/*{.ts,.js}'],
-        synchronize: false, //k nên dùng
+        synchronize: true, //k nên dùng
       }),
     }),
     AuthModule,
