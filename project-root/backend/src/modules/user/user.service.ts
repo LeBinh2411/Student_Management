@@ -94,43 +94,73 @@ export class UserService {
     }
 
     //check roleId có tồn tại k
-    if (typeof updateUserDto.roleId !== 'undefined') {
-      const role = await this.roleRepository.findOne({
-        where: { id: updateUserDto.roleId },
-      });
-      if (!role)
-        throw new NotFoundException(
-          `Role id=${updateUserDto.roleId} không tồn tại`,
-        );
+    const role = await this.roleRepository.findOne({
+      where: { id: updateUserDto.roleId },
+    });
+    if (!role) {
+      // throw: lém lỗi ra ngoài, dừng function hiện tại
+      // NotFoundException: một Exception trong NestJS, tương ứng với HTTP status code 404 Not Found.
+      throw new NotFoundException(
+        `Role id=${updateUserDto.roleId} không tồn tại`,
+      );
     }
 
     //cập nhật dữ liệu
     await this.userRepository
-      .createQueryBuilder()
-      .update(User)
+      .createQueryBuilder() // Tạo QueryBuilder để xây dựng truy vấn SQL tùy chỉnh cho bảng User.
+      .update(User) // Chỉ định rằng đây là lệnh UPDATE, áp dụng trên bảng User trong database.
       .set({
-        userName: updateUserDto.userName,
+        //truyền các cột cần thay đổi
+        userName: updateUserDto.userName, // Cập nhật cột userName trong bảng với giá trị userName từ DTO.
         password: updateUserDto.password,
-        role: { id: updateUserDto.roleId },
+        role: { id: updateUserDto.roleId }, //gán roleId mới cho user vì quan hệ @ManyToOne, nên roleId phải = id của bảng Role
       })
-      .where('id = :id', { id: id })
-      .execute();
+      .where('id = :id', { id: id }) // điều kiện update
+      .execute(); // Thực thi truy vấn UPDATE và update dữ liệu trong db, không trả về dữ liệu thô
 
-    // tìm lại user sau khi update để trả về entity đầy đủ
+    // Tìm lại bản ghi User dựa trên id sau khi cập nhật để đảm bảo dữ liệu mới.
     const updatedUser = await this.userRepository.findOne({
-      where: { id },
-      relations: ['role', 'role.users'],
+      where: { id }, // Lọc bản ghi dựa trên id của user đã cập nhật.
+      relations: ['role', 'role.users'], // Tải thêm dữ liệu liên quan, bao gồm role và danh sách users trong role để trả về entity đầy đủ.
     });
 
-    // debug xem updateResult có gì
+    // In ra bản ghi updateResult có gì
     console.log('Update User:', updatedUser);
 
+    // Kiểm tra nếu không tìm thấy user sau cập nhật, tránh trả về undefined.
     if (!updatedUser) {
       throw new NotFoundException(
         `Không thể tìm thấy user id=${id} sau khi cập nhật`,
       );
     }
 
+    // Trả về entity User đã cập nhật,
     return updatedUser;
+  }
+
+  async delete(id: number): Promise<boolean> {
+    //check id có tồn tại không
+    const user = await this.userRepository.findOne({
+      where: { id: id },
+    });
+    if (!user) {
+      throw new NotFoundException(`User id= ${id} không tồn tại`);
+    }
+
+    //dùng typeORM xóa
+    const deleteResult = await this.userRepository
+      .createQueryBuilder()
+      .delete() //chỉ dịnh đây là lệnh delete
+      .from(User) // xác định bảng xóa
+      .where('id = :id', { id: id }) // điều kiện để xóa
+      .execute(); //thực thi truy delete vào db
+
+    // Kiểm tra xem xóa có thành công không dựa trên số bản ghi bị ảnh hưởng
+    if (deleteResult.affected === 0) {
+      throw new Error(`Xóa user id=${id} thất bại`); // Ném lỗi nếu không có bản ghi nào bị xóa
+    }
+
+    // Trả về true nếu xóa thành công, báo hiệu quá trình hoàn tất
+    return true;
   }
 }

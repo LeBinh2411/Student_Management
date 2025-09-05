@@ -64,7 +64,9 @@ export class RoleController {
     return { message: `Role id=${id} đã được xóa thành công` }; // sau khi xóa trả về JSON thông báo cho client
   }
 
-  @Patch(':id')
+  @Patch('/:id')
+  @ApiParam({ name: 'id', required: true, example: 0, description: 'RoleID' })
+  @ApiOperation({ summary: 'Update name by id' })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRoleDto: CreateRoleDto,

@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString, Length } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Length,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty({ message: 'UserName không được để trống' })
@@ -16,8 +23,8 @@ export class CreateUserDto {
 
   @IsNotEmpty({ message: 'RoleId không được để trống' })
   @IsNumber({}, { message: 'RoleId phải là số' })
-  //@Min(1, { message: 'RoleId phải lớn hơn hoặc bằng 1' })
-  //@Max(1000, { message: 'RoleId phải nhỏ hơn hoặc bằng 1000' }) // Giả định giới hạn
+  @Min(1, { message: 'RoleId phải lớn hơn hoặc bằng 1' })
+  @Max(1000, { message: 'RoleId phải nhỏ hơn hoặc bằng 1000' }) // Giả định giới hạn
   @ApiProperty({ example: 1, description: 'ID của Role' })
   roleId: number; // chỉ chuyền id của Role
 }
