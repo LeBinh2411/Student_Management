@@ -24,8 +24,8 @@ export class UserController {
     return this.userService.create(body);
   }
 
-  // @Patch(':id')
-  // async update(@Param('id') id: number, @Body() updateUser: CreateUserDto) {
-  //   return this.userService.update(id, updateUser);
-  // }
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() updateUser: CreateUserDto) {
+    return this.userService.update(id, updateUser);
+  }
 }

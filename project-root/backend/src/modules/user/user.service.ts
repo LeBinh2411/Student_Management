@@ -84,24 +84,53 @@ export class UserService {
     return await this.userRepository.save(newUser);
   }
 
-  // async update(id: number, updateUserDto: CreateUserDto): Promise<User> {
-  //   //tìm id user
-  //   const users = await this.userRepository.findOne({
-  //     where: { id: id },
-  //   });
-  //   if (!users) {
-  //     throw new NotFoundException(`User id=${id} không tồn tại `);
-  //   }
-  //   //cập nhật dữ liệu
-  //   const updateUser = {
-  //     ...users,
-  //     ...updateUserDto,
-  //     role: updateUserDto.roleId
-  //       ? ({ id: updateUserDto.roleId } as Role)
-  //       : users.role,
-  //   };
+  async update(id: number, updateUserDto: CreateUserDto): Promise<User> {
+    //check xem id user tồn tại k
+    const users = await this.userRepository.findOne({
+      where: { id: id },
+    });
+    if (!users) {
+      throw new NotFoundException(`User id=${id} không tồn tại `);
+    }
 
-  //   //lưu vào db
-  //   return await this.userRepository.save(updateUser);
-  // }
+    //check roleId có tồn tại k
+    if (typeof updateUserDto.roleId !== 'undefined') {
+      const role = await this.roleRepository.findOne({
+        where: { id: updateUserDto.roleId },
+      });
+      if (!role)
+        throw new NotFoundException(
+          `Role id=${updateUserDto.roleId} không tồn tại`,
+        );
+    }
+
+    //cập nhật dữ liệu
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({
+        userName: updateUserDto.userName,
+        password: updateUserDto.password,
+        role: { id: updateUserDto.roleId },
+      })
+      .where('id = :id', { id: id })
+      .execute();
+
+    // tìm lại user sau khi update để trả về entity đầy đủ
+    const updatedUser = await this.userRepository.findOne({
+      where: { id },
+      relations: ['role', 'role.users'],
+    });
+
+    // debug xem updateResult có gì
+    console.log('Update User:', updatedUser);
+
+    if (!updatedUser) {
+      throw new NotFoundException(
+        `Không thể tìm thấy user id=${id} sau khi cập nhật`,
+      );
+    }
+
+    return updatedUser;
+  }
 }
