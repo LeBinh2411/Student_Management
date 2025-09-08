@@ -16,14 +16,6 @@ export class Parent {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => User) // join với bảng User qua khóa chính của bảng User
-  @JoinColumn({ name: 'user_id' }) //khóa ngoại
-  user: User;
-
-  @OneToMany(() => Student, (student) => student.parent)
-  // @JoinColumn({ name: 'student_id' })
-  students: Student[]; // thuộc tính này sẽ là 1 mảng các Student gắn với Parent này
-
   @Column({ name: 'avatar_url', type: 'varchar' })
   avatarUrl: string;
 
@@ -44,4 +36,12 @@ export class Parent {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+
+  @OneToOne(() => User) // join với bảng User qua khóa chính của bảng User
+  @JoinColumn({ name: 'user_id' }) //khóa ngoại
+  user: User;
+
+  @OneToMany(() => Student, (student) => student.parent)
+  // @JoinColumn({ name: 'student_id' })
+  students?: Student[]; // thuộc tính này sẽ là 1 mảng các Student gắn với Parent này
 }

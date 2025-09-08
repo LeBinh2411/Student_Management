@@ -6,7 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { Role } from 'src/entity/role/role.entity';
 
 @Injectable() // là 1 decorato đánh dấu class này 1 provider(nhà phát triển)
-// Mục đích cho phép class này đc ịnect(tiêm) vào các thành phần khác như controller, service hoặc các provider khác
+// Mục đích cho phép class này đc inject(tiêm) vào các thành phần khác như controller, service hoặc các provider khác
 export class UserService {
   constructor(
     // hàm khởi tạo, khi 1 đối tượng được khởi tạo thì nó sẽ tự động gọi tới contructor

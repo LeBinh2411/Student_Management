@@ -13,5 +13,6 @@ export class Role {
   // () => User : join với bảng User
   // (user) => user.role : user là 1 biến đại diện cho từng dòng trong User,
   // user.role : ở bảng User có 1 thuộc tính role, biết đc role chính là khóa ngoại bên User
-  users: User[];
+  users?: User[];
+  //vì đây là cột ảo, nên dùng ?, để tránh TypeScript check lỗi.
 }
