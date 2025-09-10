@@ -30,7 +30,6 @@ export class UserController {
   }
 
   @Post()
-  @ApiParam({ name: 'id', required: true, example: 0, description: 'User ID' })
   @ApiOperation({ summary: 'Add user' })
   async create(@Body() body: CreateUserDto) {
     return this.userService.create(body);

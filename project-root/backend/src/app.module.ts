@@ -13,6 +13,7 @@ import { StudentModule } from './modules/student/student.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // load .env toàn cục
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
