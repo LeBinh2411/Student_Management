@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +13,8 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable() // đánh dấu class này là 1 provider nhà phát triển giúp, inject(tiêm) vào các thành phần khác như controller, service hoặc các provider khác
 export class ParentService {
+  private readonly logger = new Logger(ParentService.name);
+
   constructor(
     @InjectRepository(Parent) // báo cho nestJS cần 1 đối tượng từ Repository<Parent> để thao tác với bảng User, cho phép thực hiện các truy vấn hoặc thao tác dữ liệu liên quan đến Parent
     private readonly parentRepository: Repository<Parent>,
@@ -62,27 +65,34 @@ export class ParentService {
         `User id = ${createParent.userId} đã có parent`,
       );
     }
-    // Xử lý ảnh và tạo avatarUrl, ưu tiên file upload nếu có
     // let avatarUrl: string;
     // if (file) {
-    //   avatarUrl = `/uploads/${file.filename}`;
+    //   // if (
+    //   //   !file.filename ||
+    //   //   !['image/png', 'image/jpeg'].includes(file.mimetype)
+    //   // ) {
+    //   //   throw new BadRequestException('Chỉ chấp nhận file PNG hoặc JPG');
+    //   // }
+    //   avatarUrl = `${this.configService.get<string>('UPLOAD_PATH', '/uploads')}/${file.filename}`;
     // } else {
-    //   avatarUrl = `/uploads/default-avatar.png`;
+    //   avatarUrl = this.configService.get<string>(
+    //     'DEFAULT_AVATAR',
+    //     '/uploads/default-avatar.png',
+    //   );
     // }
-    let avatarUrl: string;
+    //Xử lý file + check dung lượng file
+
+    // 3. Xử lý avatar (file đã được pipe validate xong rồi)
+    let avatarUrl = this.configService.get<string>(
+      'DEFAULT_AVATAR',
+      '/uploads/default-avatar.png',
+    );
+
     if (file) {
-      if (
-        !file.filename ||
-        !['image/png', 'image/jpeg'].includes(file.mimetype)
-      ) {
-        throw new BadRequestException('Chỉ chấp nhận file PNG hoặc JPG');
-      }
-      avatarUrl = `${this.configService.get<string>('UPLOAD_PATH', '/uploads')}/${file.filename}`;
-    } else {
-      avatarUrl = this.configService.get<string>(
-        'DEFAULT_AVATAR',
-        '/uploads/default-avatar.png',
-      );
+      avatarUrl = `${this.configService.get<string>(
+        'UPLOAD_PATH',
+        '/uploads',
+      )}/${file.filename}`;
     }
     //Tạo 1 đối tượng parent mới
     const newParent = this.parentRepository.create({

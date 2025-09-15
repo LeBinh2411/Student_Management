@@ -11,6 +11,7 @@ import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateParentDto } from './dto/create-parent.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Parent } from 'src/entity/parent/parent.entity';
+import { ImageValidationPige } from 'src/pipes/image-validation.pipe';
 
 @ApiTags('Parent - Phụ huynh')
 @Controller('parent')
@@ -23,71 +24,29 @@ export class ParentController {
     return this.parentService.findAll();
   }
 
-  // @Post()
-  // @UseInterceptors(FileInterceptor('file'))
-  // @ApiConsumes('multipart/form-data')
-  // // @ApiBody({
-  // //   schema: {
-  // //     type: 'object',
-  // //     properties: {
-  // //       fullName: { type: 'string', example: 'Phụ huynh A' },
-  // //       phoneNumber: { type: 'string', example: '0972899999' },
-  // //       email: { type: 'string', example: 'A123@gmail.com' },
-  // //       address: { type: 'string', example: 'Địa chỉ A' },
-  // //       userId: { type: 'number', example: 1 },
-  // //       file: {
-  // //         type: 'string',
-  // //         format: 'binary',
-  // //       },
-  // //       required: ['fullName', 'phoneNumber', 'email', 'address', 'userId'],
-  // //     },
-  // //   },
-  // // })
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       fullName: { type: 'string', example: 'Phụ huynh A' },
-  //       phoneNumber: { type: 'string', example: '0972899999' },
-  //       email: { type: 'string', example: 'A123@gmail.com' },
-  //       address: { type: 'string', example: 'Địa chỉ A' },
-  //       userId: { type: 'number', example: 1 },
-  //       file: { type: 'string', format: 'binary' },
-  //     },
-  //     required: ['fullName', 'phoneNumber', 'userId'], // ✅ đúng: nằm trong schema
-  //   },
-  // })
-  // @ApiOperation({ summary: 'Add Parent' })
-  // async create(
-  //   @UploadedFile() file: Express.Multer.File,
-  //   @Body() createParent: CreateParentDto,
-  // ) {
-  //   return this.parentService.create(createParent, file);
-  // }
   @Post()
   @UseInterceptors(FileInterceptor('avatar')) // Xử lý file upload từ trường 'avatar'
-  @ApiOperation({ summary: 'Tạo mới một Parent với avatar tùy chọn' })
+  @ApiOperation({
+    summary: 'Tạo mới một Parent với avatar (có thể không upload)',
+  })
   @ApiConsumes('multipart/form-data') // Chỉ định yêu cầu là multipart/form-data
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        avatar: {
-          type: 'string',
-          format: 'binary', // Định nghĩa trường file upload
-        },
-        userId: { type: 'number' },
-        fullName: { type: 'string' },
-        phoneNumber: { type: 'string' },
-        email: { type: 'string' },
-        address: { type: 'string' },
+        avatar: { type: 'string', format: 'binary', nullable: true },
+        userId: { type: 'number', example: 1 },
+        fullName: { type: 'string', example: 'Phụ huynh A' },
+        phoneNumber: { type: 'string', example: '0972899999' },
+        email: { type: 'string', example: 'a@a.com' },
+        address: { type: 'string', example: 'Địa chỉ A' },
       },
-      required: ['userId', 'fullName'], // Các trường bắt buộc
+      required: ['userId', 'fullName'],
     },
   })
   async create(
-    @UploadedFile() file: Express.Multer.File,
     @Body() createParentDto: CreateParentDto,
+    @UploadedFile(new ImageValidationPige()) file?: Express.Multer.File, // validate file bằng Pipe riêng
   ): Promise<Parent> {
     return this.parentService.create(createParentDto, file);
   }
