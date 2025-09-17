@@ -15,7 +15,7 @@ export class CreateParentDto {
   @IsString()
   //@ApiProperty({ example: 'default-avatar.png', description: 'Ảnh người dùng' })
   @ApiProperty({ type: 'string', format: 'binary', required: false })
-  avatar?: string;
+  avatarUrl?: string;
 
   @IsNotEmpty({ message: 'Full Name không được để trông' })
   @IsString({ message: 'Phải là chuỗi ký tự' })

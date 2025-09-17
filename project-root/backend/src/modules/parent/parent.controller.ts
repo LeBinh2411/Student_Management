@@ -2,6 +2,9 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
+  Patch,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -25,16 +28,21 @@ export class ParentController {
   }
 
   @Post()
-  @UseInterceptors(FileInterceptor('avatar')) // Xử lý file upload từ trường 'avatar'
+  @UseInterceptors(FileInterceptor('avatarUrl')) // Xử lý file upload từ trường 'avatar'
+  // Sử dụng FileInterceptor để xử lý file upload từ trường 'avatar' trong form-data, lưu vào thư mục mặc định (thường ./uploads)
   @ApiOperation({
     summary: 'Tạo mới một Parent với avatar (có thể không upload)',
   })
   @ApiConsumes('multipart/form-data') // Chỉ định yêu cầu là multipart/form-data
   @ApiBody({
+    // Định nghĩa schema cho body của request trong Swagger
+    // - type: 'object': Dữ liệu là một object
+    // - properties: Liệt kê các trường, bao gồm:
+    // - required: Chỉ định userId và fullName là bắt buộc
     schema: {
       type: 'object',
       properties: {
-        avatar: { type: 'string', format: 'binary', nullable: true },
+        avatarUrl: { type: 'string', format: 'binary', nullable: true },
         userId: { type: 'number', example: 1 },
         fullName: { type: 'string', example: 'Phụ huynh A' },
         phoneNumber: { type: 'string', example: '0972899999' },
@@ -46,8 +54,33 @@ export class ParentController {
   })
   async create(
     @Body() createParentDto: CreateParentDto,
-    @UploadedFile(new ImageValidationPige()) file?: Express.Multer.File, // validate file bằng Pipe riêng
+    @UploadedFile(new ImageValidationPige()) file?: Express.Multer.File, //lấy file từ avatar, áp dụng ImageValidationPige để validate, file? đánh dấu là tùy chọn(undefined nếu k upload)
   ): Promise<Parent> {
-    return this.parentService.create(createParentDto, file);
+    return this.parentService.create(createParentDto, file); // Gửi dữ liệu và file đến service để xử lý logic tạo Parent
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update Parent by id' })
+  @UseInterceptors(FileInterceptor('avatarUrl'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        avatarUrl: { type: 'string', format: 'binary', nullable: true },
+        userId: { type: 'number', example: 1 },
+        fullName: { type: 'string', example: 'Phụ huynh A' },
+        phoneNumber: { type: 'string', example: '0972899999' },
+        email: { type: 'string', example: 'a@a.com' },
+        address: { type: 'string', example: 'Địa chỉ A' },
+      },
+    },
+  })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateParentDto: CreateParentDto,
+    @UploadedFile(new ImageValidationPige()) file?: Express.Multer.File,
+  ): Promise<Parent> {
+    return this.parentService.update(id, updateParentDto, file);
   }
 }

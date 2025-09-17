@@ -106,4 +106,62 @@ export class ParentService {
     // Lưu parent mới vào database và trả về entity đã lưu
     return this.parentRepository.save(newParent);
   }
+
+  //update
+  async update(
+    id: number,
+    updateParentDto: CreateParentDto,
+    file?: Express.Multer.File,
+  ): Promise<Parent> {
+    //check xem phụ huynh đó có tồn tại k
+    const parents = await this.parentRepository.findOne({
+      where: { id: id },
+    });
+    if (!parents) {
+      throw new NotFoundException(`Parent với id = ${id} không tồn tại`);
+    }
+    //check userID đã liên kết với Parent nào chưa
+    const userId = await this.parentRepository.findOne({
+      where: { user: { id: updateParentDto.userId } },
+    });
+    if (userId) {
+      throw new NotFoundException(
+        `UserID ${updateParentDto.userId} đã có Parent`,
+      );
+    }
+    //Xử lý avatar - nếu có file upload
+    let avatarUrl = parents.avatarUrl;
+    if (file) {
+      avatarUrl = `${this.configService.get<string>(
+        'UPLOAD_PATH',
+        '/uploads',
+      )}/${file.filename}`;
+    }
+    // cập nhật dữ liệu
+    await this.parentRepository.update(id, {
+      fullName: updateParentDto.fullName ?? parents.fullName,
+      phoneNumber: updateParentDto.phoneNumber ?? parents.phoneNumber,
+      email: updateParentDto.email ?? parents.email,
+      address: updateParentDto.address ?? parents.address,
+      avatarUrl,
+      user: updateParentDto.userId
+        ? { id: updateParentDto.userId }
+        : parents.user,
+    });
+
+    //Lấy lại entity sau update và đảm bảo không null
+    const updated = await this.parentRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+
+    if (!updated) {
+      // trường hợp cực hiếm — ném lỗi rõ ràng thay vì trả null
+      throw new NotFoundException(
+        `Không thể tìm thấy parent id=${id} sau khi cập nhật`,
+      );
+    }
+
+    return updated;
+  }
 }
