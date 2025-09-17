@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -10,7 +11,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ParentService } from './parent.service';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateParentDto } from './dto/create-parent.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Parent } from 'src/entity/parent/parent.entity';
@@ -82,5 +89,19 @@ export class ParentController {
     @UploadedFile(new ImageValidationPige()) file?: Express.Multer.File,
   ): Promise<Parent> {
     return this.parentService.update(id, updateParentDto, file);
+  }
+
+  //delete
+  @Delete('/:id')
+  @ApiParam({
+    name: 'id',
+    required: true,
+    example: 0,
+    description: 'Parent ID',
+  })
+  @ApiOperation({ summary: 'Delete Parent byID' })
+  async delete(@Param('id') id: number) {
+    await this.parentService.delete(id);
+    return { message: `Parent ${id} đã xóa thành công` };
   }
 }

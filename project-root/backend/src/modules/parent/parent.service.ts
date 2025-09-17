@@ -149,10 +149,10 @@ export class ParentService {
         : parents.user,
     });
 
-    //Lấy lại entity sau update và đảm bảo không null
+    //Lấy lại bản ghi sau khi cập nhật dựa trên id
     const updated = await this.parentRepository.findOne({
-      where: { id },
-      relations: ['user'],
+      where: { id }, // lọc bản bản ghi dựa trên id của parent cập nhật
+      relations: ['user'], // Tải dữ liệu bao gồm user
     });
 
     if (!updated) {
@@ -161,7 +161,29 @@ export class ParentService {
         `Không thể tìm thấy parent id=${id} sau khi cập nhật`,
       );
     }
-
     return updated;
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const parent = await this.parentRepository.findOne({
+      where: { id: id },
+    });
+    if (!parent) {
+      throw new NotFoundException(`Parent ${id} không tồn tại`);
+    }
+    //dùng typeORM
+    const deleteResult = await this.parentRepository
+      .createQueryBuilder()
+      .delete()
+      .from(Parent)
+      .where('id = :id', { id: id })
+      .execute();
+
+    //kiểm tra xem xóa có thành công không dựa trên số bản ghi bị ảnh hưởng
+    if (deleteResult.affected === 0) {
+      throw new Error(`Xóa Parent ${id} thất bại`);
+    }
+    //trả về true nếu xóa thành công
+    return true;
   }
 }
